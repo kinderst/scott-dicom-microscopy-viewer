@@ -752,7 +752,7 @@ class VolumeImageViewer {
    * that should be included in the viewport
    * @param {boolean} [options.debug=false] - Whether debug features should be
    * turned on (e.g., display of tile boundaries)
-   * @param {number} [options.tilesCacheSize=1000] - Number of tiles that should
+   * @param {number} [options.tilesCacheSize=100] - Number of tiles that should
    * be cached to avoid repeated retrieval for the DICOMweb server
    * @param {number[]} [options.primaryColor=[0, 126, 163]] - Primary color of
    * the application
@@ -811,7 +811,7 @@ class VolumeImageViewer {
     }
 
     if (this[_options].tilesCacheSize == null) {
-      this[_options].tilesCacheSize = 1000
+      this[_options].tilesCacheSize = 100
     }
 
     if (this[_options].controls == null) {
@@ -1152,7 +1152,8 @@ class VolumeImageViewer {
           style: layerStyle,
           visible: false,
           useInterimTilesOnError: false,
-          cacheSize: this[_options].tilesCacheSize
+          // cacheSize: this[_options].tilesCacheSize
+          cacheSize: 100
         })
         opticalPath.layer.helper = helper
         opticalPath.layer.on('precompose', (event) => {
@@ -1244,7 +1245,8 @@ class VolumeImageViewer {
         extent: this[_tileGrid].extent,
         preload: this[_options].preload ? 1 : 0,
         useInterimTilesOnError: false,
-        cacheSize: this[_options].tilesCacheSize
+        // cacheSize: this[_options].tilesCacheSize
+        cacheSize: 100
       })
       opticalPath.layer.on('error', (event) => {
         console.error(
@@ -1253,29 +1255,34 @@ class VolumeImageViewer {
         )
       })
       opticalPath.layer.on('postcompose', (event) => {
-        const myFilter = new WebGLImageFilter({ canvas: event.context.canvas });
-        if (this[_imageAugmentations]['hue'] !== 0) {
-          myFilter.addFilter('hue', this[_imageAugmentations]['hue']);
+        try {
+          const myFilter = new WebGLImageFilter({ canvas: event.context.canvas });
+          if (this[_imageAugmentations]['hue'] !== 0) {
+            myFilter.addFilter('hue', this[_imageAugmentations]['hue']);
+          }
+          if (this[_imageAugmentations]['saturation'] !== 0) {
+            myFilter.addFilter('saturation', this[_imageAugmentations]['saturation']);
+          }
+          if (this[_imageAugmentations]['brightness'] !== 0) {
+            myFilter.addFilter('brightness', this[_imageAugmentations]['brightness']);
+          }
+          if (this[_imageAugmentations]['contrast'] !== 0) {
+            myFilter.addFilter('contrast', this[_imageAugmentations]['contrast']);
+          }
+          if (this[_imageAugmentations]['sharpen'] !== 0) {
+            myFilter.addFilter('sharpen', this[_imageAugmentations]['sharpen']);
+          }
+          if (!!this[_imageAugmentations]['detectEdges']) {
+            myFilter.addFilter('detectEdges')
+          }
+          if (!!this[_imageAugmentations]['negative']) {
+            myFilter.addFilter('negative')
+          }
+          myFilter.apply(event.context.canvas)
+        } catch (tcError) {
+          console.log('here is the error: ', tcError);
         }
-        if (this[_imageAugmentations]['saturation'] !== 0) {
-          myFilter.addFilter('saturation', this[_imageAugmentations]['saturation']);
-        }
-        if (this[_imageAugmentations]['brightness'] !== 0) {
-          myFilter.addFilter('brightness', this[_imageAugmentations]['brightness']);
-        }
-        if (this[_imageAugmentations]['contrast'] !== 0) {
-          myFilter.addFilter('contrast', this[_imageAugmentations]['contrast']);
-        }
-        if (this[_imageAugmentations]['sharpen'] !== 0) {
-          myFilter.addFilter('sharpen', this[_imageAugmentations]['sharpen']);
-        }
-        if (!!this[_imageAugmentations]['detectEdges']) {
-          myFilter.addFilter('detectEdges')
-        }
-        if (!!this[_imageAugmentations]['negative']) {
-          myFilter.addFilter('negative')
-        }
-        myFilter.apply(event.context.canvas)
+          
       });
 
       opticalPath.overviewLayer = new TileLayer({
@@ -1382,7 +1389,7 @@ class VolumeImageViewer {
         overviewmapElement.style.height = `${height}px`
         map.updateSize()
         map.setView(overviewView)
-        console.log("omg hi hi hi no wai")
+        console.log("omg hi hi hi no wai CHANGES yeah neww lol yesh!")
         this[_map].removeControl(this[_overviewMap])
         this[_map].addControl(this[_overviewMap])
       }
